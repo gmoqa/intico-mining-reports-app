@@ -29,6 +29,7 @@ import {
 	DrawerTitle,
 	DrawerTrigger,
 } from "@/components/ui/drawer"
+import {ScrollArea} from "@/components/ui/scroll-area";
 
 export default function Inactivity() {
 	const [reports, setReports] = useState([])
@@ -47,31 +48,31 @@ export default function Inactivity() {
 	};
 
 	return (
-	  <div className="flex flex-1 flex-col gap-4 p-4">
+	  <div className="flex flex-1 flex-col gap-4 p-1">
 		  <Table>
 			  <TableHeader>
 				  <TableRow>
 					  <TableHead className="hidden md:table-cell w-[100px]">#ID</TableHead>
-					  <TableHead className="hidden md:table-cell w-[100px]">Turno</TableHead>
 					  <TableHead className="w-[100px]">Contratista</TableHead>
 					  <TableHead className="w-[100px]">Fecha</TableHead>
+					  <TableHead className="w-[50px]">Turno</TableHead>
 					  <TableHead className="hidden md:table-cell w-[60px]">Navixy ID</TableHead>
 					  <TableHead className="hidden md:table-cell w-[100px]">Vehiculos</TableHead>
-					  <TableHead className="w-[100px]"></TableHead>
+					  <TableHead className="w-[100px]">Reporte</TableHead>
 				  </TableRow>
 			  </TableHeader>
 			  <TableBody>
 				  {reports && reports?.data?.map(report => (
 					  <TableRow key={report?.id}>
 						  <TableCell className="hidden md:table-cell">#{report?.id}</TableCell>
-						  <TableCell className="hidden md:table-cell">{report?.shift?.type}</TableCell>
 						  <TableCell className={'text-xs'}>{report?.contractor?.name}</TableCell>
 						  <TableCell className={'text-xs'}>{dayjs(report?.date, "YYYY-MM-DD").format("DD/MM/YYYY")}</TableCell>
+						  <TableCell>{report?.shift?.type}</TableCell>
 						  <TableCell className="hidden md:table-cell"><Badge variant={'outline'}>{report?.navixy_id}</Badge></TableCell>
 						  <TableCell className="hidden md:table-cell">{report?.vehicles?.length}</TableCell>
 						  <TableCell>
 							  <Button className={'text-xs'} size={'xs'} variant={'outline'} onClick={() => handleOpenDialog(report)}>
-								  Detalles
+								  Ver reporte
 							  </Button>
 						  </TableCell>
 					  </TableRow>
@@ -88,16 +89,18 @@ export default function Inactivity() {
 						  <DrawerTitle>{selectedReport?.contractor?.name.toUpperCase()}</DrawerTitle>
 						  <DrawerDescription>Turno {selectedReport?.shift?.tipo} {selectedReport?.shift?.name}</DrawerDescription>
 					  </DrawerHeader>
-					  <div className="p-4 pb-2">
-						  <div className="h-[200px] font-semibold">
-							  Vehículos ({ selectedReport?.vehicles?.length })
-							  <div className="pt-2 pb-2 flex flex-wrap gap-2">
-								  {selectedReport?.vehicles?.map(vehicle => (
-									  <Badge key={vehicle?.id}>{vehicle?.name}</Badge>
-								  ))}
+					  <ScrollArea className="h-72">
+						  <div className="p-4 pb-2">
+							  <div className="h-[200px] font-semibold">
+								  Vehículos ({ selectedReport?.vehicles?.length })
+								  <div className="pt-2 pb-2 flex flex-wrap gap-2">
+									  {selectedReport?.vehicles?.map(vehicle => (
+										  <Badge className={'text-xs'} key={vehicle?.id}>{vehicle?.name}</Badge>
+									  ))}
+								  </div>
 							  </div>
 						  </div>
-					  </div>
+					  </ScrollArea>
 					  <DrawerFooter>
 						  <Button variant="">Mas información</Button>
 						  <DrawerClose asChild>
