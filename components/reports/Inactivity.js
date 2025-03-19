@@ -18,6 +18,9 @@ import { Button } from "@/components/ui/button";
 dayjs.extend(utc)
 dayjs.extend(timezone)
 dayjs.tz.setDefault("America/Santiago")
+import { DataTable } from "@/components/data-table";
+
+import data from "./data.json"
 
 import {
 	Drawer,
@@ -30,6 +33,8 @@ import {
 	DrawerTrigger,
 } from "@/components/ui/drawer"
 import {ScrollArea} from "@/components/ui/scroll-area";
+import {Card, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
+import {TrendingDownIcon, TrendingUpIcon} from "lucide-react";
 
 export default function Inactivity() {
 	const [reports, setReports] = useState([])
@@ -71,7 +76,7 @@ export default function Inactivity() {
 						  <TableCell className="hidden md:table-cell"><Badge variant={'outline'}>{report?.navixy_id}</Badge></TableCell>
 						  <TableCell className="hidden md:table-cell">{report?.vehicles?.length}</TableCell>
 						  <TableCell>
-							  <Button className={'text-xs'} size={'xs'} variant={'outline'} onClick={() => handleOpenDialog(report)}>
+							  <Button variant={'outline'} onClick={() => handleOpenDialog(report)}>
 								  Ver reporte
 							  </Button>
 						  </TableCell>
@@ -87,19 +92,28 @@ export default function Inactivity() {
 						  <DrawerTitle>Reporte de Inactividad</DrawerTitle>
 						  <DrawerDescription>{dayjs(selectedReport?.date).format('DD/MM/YYYY')}</DrawerDescription>
 						  <DrawerTitle>{selectedReport?.contractor?.name.toUpperCase()}</DrawerTitle>
-						  <DrawerDescription>Turno {selectedReport?.shift?.tipo} {selectedReport?.shift?.name}</DrawerDescription>
+						  <DrawerDescription>TURNO {selectedReport?.shift?.type}</DrawerDescription>
+						  <Badge variant={'outline'} className={'mt-2'}>{selectedReport?.vehicles?.length} Vehículos</Badge>
 					  </DrawerHeader>
-					  <ScrollArea className="h-72">
-						  <div className="p-4 pb-2">
-							  <div className="h-[200px] font-semibold">
-								  Vehículos ({ selectedReport?.vehicles?.length })
-								  <div className="pt-2 pb-2 flex flex-wrap gap-2">
-									  {selectedReport?.vehicles?.map(vehicle => (
-										  <Badge className={'text-xs'} key={vehicle?.id}>{vehicle?.name}</Badge>
-									  ))}
-								  </div>
-							  </div>
-						  </div>
+					  <ScrollArea className="h-72 px-2">
+						  <Table className={''}>
+							  <TableHeader>
+								  <TableRow>
+									  <TableHead className="w-[100px]">Vehículo</TableHead>
+									  <TableHead className="text-right">Inactividad</TableHead>
+								  </TableRow>
+							  </TableHeader>
+							  <TableBody>
+								  {selectedReport?.navixy_response?.report?.sheets?.map((vehicle) => (
+									  <TableRow key={vehicle.header}>
+										  <TableCell className="font-medium text-xs">{vehicle.header}</TableCell>
+										  <TableCell className="text-right">{vehicle.sections[0].text === 'Sin tiempo de inactividad en el período especificado.' ? 'Sin Inactividad' : vehicle.sections[1].rows.find(row => row.name === 'Duración inactivo').v}</TableCell>
+										  <TableCell>
+										  </TableCell>
+									  </TableRow>
+								  ))}
+							  </TableBody>
+						  </Table>
 					  </ScrollArea>
 					  <DrawerFooter>
 						  <Button variant="">Mas información</Button>
