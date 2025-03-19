@@ -147,6 +147,28 @@ export default function Inactivity() {
 						  {selectedReport?.contractor?.name.toUpperCase()} - {dayjs(selectedReport?.date).format('DD/MM/YYYY')}
 					  </DialogDescription>
 				  </DialogHeader>
+				  <Table>
+					  <TableHeader>
+						  <TableRow>
+							  <TableHead className="w-[100px]">Vehículo</TableHead>
+							  <TableHead className="w-[100px] text-right">Períodos ociosos</TableHead>
+							  <TableHead className="w-[100px] text-right">Duración inactivo</TableHead>
+							  <TableHead className="w-[100px] text-right">Ingnición ON</TableHead>
+							  <TableHead className="w-[100px] text-right">Ingnición ON %</TableHead>
+						  </TableRow>
+					  </TableHeader>
+					  <TableBody>
+						  {selectedReport?.navixy_response?.report?.sheets?.map((vehicle) => (
+							  <TableRow key={vehicle.header}>
+								  <TableCell className="font-medium text-xs">{vehicle.header}</TableCell>
+								  <TableCell className="text-right text-xs">{vehicle.sections[0].text === 'Sin tiempo de inactividad en el período especificado.' ? '---' : vehicle.sections[1].rows.find(row => row.name === 'Duración inactivo').v}</TableCell>
+								  <TableCell className="text-right text-xs">{vehicle.sections[1]?.rows.find(row => row.name === 'Períodos ociosos').v || '---'}</TableCell>
+								  <TableCell className="text-right text-xs">{vehicle.sections[1]?.rows.find(row => row.name === 'Duración inactivo').v || '---'}</TableCell>
+								  <TableCell className="text-right text-xs">{vehicle.sections[1]?.rows.find(row => row.name === "\"Ingnición ON\" porcentaje, %").v || '---'}</TableCell>
+							  </TableRow>
+						  ))}
+					  </TableBody>
+				  </Table>
 			  </DialogContent>
 		  </Dialog>
 	  </div>
