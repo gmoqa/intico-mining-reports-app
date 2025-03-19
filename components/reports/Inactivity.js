@@ -35,10 +35,20 @@ import {
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {Card, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {TrendingDownIcon, TrendingUpIcon} from "lucide-react";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog"
 
 export default function Inactivity() {
 	const [reports, setReports] = useState([])
 	const [open, setOpen] = useState(false)
+	const [openReport, setOpenReport] = useState(false)
 	const [selectedReport, setSelectedReport] = useState(null)
 
 	useEffect(() => {
@@ -50,6 +60,11 @@ export default function Inactivity() {
 	const handleOpenDialog = (report) => {
 		setSelectedReport(report);
 		setOpen(true);
+	};
+
+	const handleOpenReportDialog = () => {
+		setOpen(false);
+		setOpenReport(true);
 	};
 
 	return (
@@ -107,7 +122,7 @@ export default function Inactivity() {
 								  {selectedReport?.navixy_response?.report?.sheets?.map((vehicle) => (
 									  <TableRow key={vehicle.header}>
 										  <TableCell className="font-medium text-xs">{vehicle.header}</TableCell>
-										  <TableCell className="text-right">{vehicle.sections[0].text === 'Sin tiempo de inactividad en el período especificado.' ? 'Sin Inactividad' : vehicle.sections[1].rows.find(row => row.name === 'Duración inactivo').v}</TableCell>
+										  <TableCell className="text-right text-xs">{vehicle.sections[0].text === 'Sin tiempo de inactividad en el período especificado.' ? 'Sin Inactividad' : vehicle.sections[1].rows.find(row => row.name === 'Duración inactivo').v}</TableCell>
 										  <TableCell>
 										  </TableCell>
 									  </TableRow>
@@ -116,7 +131,7 @@ export default function Inactivity() {
 						  </Table>
 					  </ScrollArea>
 					  <DrawerFooter>
-						  <Button variant="">Mas información</Button>
+						  <Button onClick={() => handleOpenReportDialog()}>Ver reporte completo</Button>
 						  <DrawerClose asChild>
 							  <Button variant="outline">Volver</Button>
 						  </DrawerClose>
@@ -124,6 +139,16 @@ export default function Inactivity() {
 				  </div>
 			  </DrawerContent>
 		  </Drawer>
+		  <Dialog open={openReport} onOpenChange={setOpenReport}>
+			  <DialogContent className="sm:max-w-[90%] h-[90%]">
+				  <DialogHeader>
+					  <DialogTitle>Reporte de Inactividad</DialogTitle>
+					  <DialogDescription>
+						  {selectedReport?.contractor?.name.toUpperCase()} - {dayjs(selectedReport?.date).format('DD/MM/YYYY')}
+					  </DialogDescription>
+				  </DialogHeader>
+			  </DialogContent>
+		  </Dialog>
 	  </div>
 	);
 }
