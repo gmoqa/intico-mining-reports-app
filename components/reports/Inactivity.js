@@ -70,6 +70,20 @@ export default function Inactivity() {
 		setOpenReport(true);
 	};
 
+	function formatSecondsToHHMMSS(seconds) {
+		// evito devolver NAN
+		if (typeof seconds !== 'number') return '--'
+		const hours = Math.floor(seconds / 3600); // Calcular las horas
+		const minutes = Math.floor((seconds % 3600) / 60); // Calcular los minutos restantes
+		const remainingSeconds = seconds % 60; // Calcular los segundos restantes
+
+		// Asegurarse de que las horas, minutos y segundos tengan dos dígitos
+		const formattedHours = String(hours).padStart(2, '0');
+		const formattedMinutes = String(minutes).padStart(2, '0');
+
+		return `${formattedHours}:${formattedMinutes}`; // Formato "HH:mm:ss"
+	}
+
 	return (
 	  <div className="w-full overflow-auto whitespace-nowrap">
 		  <Table>
@@ -143,34 +157,75 @@ export default function Inactivity() {
 			  </DrawerContent>
 		  </Drawer>
 		  <Dialog open={openReport} onOpenChange={setOpenReport}>
-			  <DialogContent className={'sm:max-w-[Npx]'}>
+			  <DialogContent className={'sm:max-w-[80%]'}>
 				  <DialogHeader>
 					  <DialogTitle>Reporte de Inactividad</DialogTitle>
 					  <DialogDescription>
 						  {selectedReport?.contractor?.name.toUpperCase()} - {dayjs(selectedReport?.date).format('DD/MM/YYYY')}
 					  </DialogDescription>
 				  </DialogHeader>
-				  <div className={'border rounded-xl px-6 py-2 border-gray-200'}>
+				  <div className={'border rounded-xl px-4 py-1 border-gray-200'}>
 					  <Table>
 						  <TableHeader>
 							  <TableRow>
 								  <TableHead className="w-[100px]">Vehículo</TableHead>
-								  <TableHead className="w-[100px] text-right">No operativo</TableHead>
-								  <TableHead className="w-[100px] text-right">{'Operativo > 5'}</TableHead>
-								  <TableHead className="w-[100px] text-right">{'Operativo < 5'}</TableHead>
-								  <TableHead className="w-[100px] text-right">Fuera</TableHead>
-								  <TableHead className="w-[100px] text-right">Tiempo efectivo</TableHead>
+								  <TableHead className="w-[100px] text-right">NO OP.</TableHead>
+								  <TableHead className="w-[100px] text-right">{'OP. > 5'}</TableHead>
+								  <TableHead className="w-[100px] text-right">{'OP. < 5'}</TableHead>
+								  <TableHead className="w-[100px] text-right">GEN</TableHead>
+								  <TableHead className="w-[100px] text-right">FUERA</TableHead>
+								  <TableHead className="w-[100px] text-right">EFECT.</TableHead>
 							  </TableRow>
 						  </TableHeader>
 						  <TableBody>
 							  {selectedReport?.navixy_response?.report?.sheets?.map((vehicle) => (
 								  <TableRow key={vehicle.header}>
-									  <TableCell className="font-medium">{vehicle.header}</TableCell>
-									  <TableCell className="text-right">{vehicle.sections[0].text === 'Sin tiempo de inactividad en el período especificado.' ? '---' : vehicle.sections[1].rows.find(row => row.name === 'Duración inactivo').v}</TableCell>
-									  <TableCell className="text-right">{vehicle.sections[1]?.rows.find(row => row.name === 'Períodos ociosos').v || '---'}</TableCell>
-									  <TableCell className="text-right">{vehicle.sections[1]?.rows.find(row => row.name === 'Duración inactivo').v || '---'}</TableCell>
-									  <TableCell className="text-right">{vehicle.sections[1]?.rows.find(row => row.name === "\"Ingnición ON\" porcentaje, %").v || '---'}</TableCell>
-									  <TableCell className="text-right">{vehicle.sections[1]?.rows.find(row => row.name === "\"Ingnición ON\" porcentaje, %").v || '---'}</TableCell>
+									  <TableCell className="font-medium font-semibold">{vehicle.header}</TableCell>
+									  <TableCell className="text-right">
+										  {formatSecondsToHHMMSS(vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
+											  .filter(row => {
+												  const addresses = row.address.v.split(']')[0].slice(1).split(',').map(item => item.trim());
+												  return addresses.some(address => address.startsWith(vehicle?.header.split('-').slice(0, 2).join('-')  + '-NOP'));
+											  })
+											  .reduce((total, row) => total + (row.idle_duration?.raw || 0), 0))}
+									  </TableCell>
+									  <TableCell className="text-right">
+										  {formatSecondsToHHMMSS(vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
+											  .filter(row => {
+												  const addresses = row.address.v.split(']')[0].slice(1).split(',').map(item => item.trim());
+												  return addresses.some(address => address.startsWith(vehicle?.header.split('-').slice(0, 2).join('-')  + '-OP'));
+											  })
+											  .filter(row => row.idle_duration?.raw > 300)
+											  .reduce((total, row) => total + (row.idle_duration?.raw || 0), 0))}
+									  </TableCell>
+									  <TableCell className="text-right">
+										  {formatSecondsToHHMMSS(vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
+											  .filter(row => {
+												  const addresses = row.address.v.split(']')[0].slice(1).split(',').map(item => item.trim());
+												  return addresses.some(address => address.startsWith(vehicle?.header.split('-').slice(0, 2).join('-')  + '-GEN'));
+											  })
+											  .reduce((total, row) => total + (row.idle_duration?.raw || 0), 0))}
+									  </TableCell>
+									  <TableCell className="text-right">
+										  {formatSecondsToHHMMSS(vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
+											  .filter(row => {
+												  const addresses = row.address.v.split(']')[0].slice(1).split(',').map(item => item.trim());
+												  return addresses.some(address => address.startsWith(vehicle?.header.split('-').slice(0, 2).join('-')  + '-OP'));
+											  })
+											  .filter(row => row.idle_duration?.raw < 300)
+											  .reduce((total, row) => total + (row.idle_duration?.raw || 0), 0))}
+									  </TableCell>
+									  <TableCell className="text-right">
+										  {formatSecondsToHHMMSS(vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
+											  .filter(row => {
+												  const addresses = row.address.v.split(']')[0].slice(1).split(',').map(item => item.trim());
+												  return addresses.length === 0;
+											  })
+											  .reduce((total, row) => total + (row.idle_duration?.raw || 0), 0))}
+									  </TableCell>
+									  <TableCell className="text-right">
+										  --
+									  </TableCell>
 								  </TableRow>
 							  ))}
 						  </TableBody>
