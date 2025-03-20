@@ -165,12 +165,12 @@ export default function Inactivity() {
 						  <TableBody>
 							  {selectedReport?.navixy_response?.report?.sheets?.map((vehicle) => (
 								  <TableRow key={vehicle.header}>
-									  <TableCell className="font-medium text-xs">{vehicle.header}</TableCell>
-									  <TableCell className="text-right text-xs">{vehicle.sections[0].text === 'Sin tiempo de inactividad en el período especificado.' ? '---' : vehicle.sections[1].rows.find(row => row.name === 'Duración inactivo').v}</TableCell>
-									  <TableCell className="text-right text-xs">{vehicle.sections[1]?.rows.find(row => row.name === 'Períodos ociosos').v || '---'}</TableCell>
-									  <TableCell className="text-right text-xs">{vehicle.sections[1]?.rows.find(row => row.name === 'Duración inactivo').v || '---'}</TableCell>
-									  <TableCell className="text-right text-xs">{vehicle.sections[1]?.rows.find(row => row.name === "\"Ingnición ON\" porcentaje, %").v || '---'}</TableCell>
-									  <TableCell className="text-right text-xs">{vehicle.sections[1]?.rows.find(row => row.name === "\"Ingnición ON\" porcentaje, %").v || '---'}</TableCell>
+									  <TableCell className="font-medium">{vehicle.header}</TableCell>
+									  <TableCell className="text-right">{vehicle.sections[0].text === 'Sin tiempo de inactividad en el período especificado.' ? '---' : vehicle.sections[1].rows.find(row => row.name === 'Duración inactivo').v}</TableCell>
+									  <TableCell className="text-right">{vehicle.sections[1]?.rows.find(row => row.name === 'Períodos ociosos').v || '---'}</TableCell>
+									  <TableCell className="text-right">{vehicle.sections[1]?.rows.find(row => row.name === 'Duración inactivo').v || '---'}</TableCell>
+									  <TableCell className="text-right">{vehicle.sections[1]?.rows.find(row => row.name === "\"Ingnición ON\" porcentaje, %").v || '---'}</TableCell>
+									  <TableCell className="text-right">{vehicle.sections[1]?.rows.find(row => row.name === "\"Ingnición ON\" porcentaje, %").v || '---'}</TableCell>
 								  </TableRow>
 							  ))}
 						  </TableBody>
