@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/drawer"
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {Card, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
-import {TrendingDownIcon, TrendingUpIcon} from "lucide-react";
+import {Download, GalleryVerticalEnd, TrendingDownIcon, TrendingUpIcon} from "lucide-react";
 import {
 	Dialog,
 	DialogContent,
@@ -44,6 +44,9 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog"
+import {Input} from "@/components/ui/input";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import * as React from "react";
 
 export default function Inactivity() {
 	const [reports, setReports] = useState([])
@@ -68,29 +71,29 @@ export default function Inactivity() {
 	};
 
 	return (
-	  <div className="flex flex-1 flex-col gap-4 p-1">
+	  <div className="w-full overflow-auto whitespace-nowrap">
 		  <Table>
 			  <TableHeader>
 				  <TableRow>
-					  <TableHead className="hidden md:table-cell w-[100px]">#ID</TableHead>
+					  <TableHead className="pl-8 hidden md:table-cell w-[100px]">ID</TableHead>
 					  <TableHead className="w-[100px]">Contratista</TableHead>
 					  <TableHead className="w-[100px]">Fecha</TableHead>
 					  <TableHead className="w-[50px]">Turno</TableHead>
 					  <TableHead className="hidden md:table-cell w-[60px]">Navixy ID</TableHead>
-					  <TableHead className="hidden md:table-cell w-[100px]">Vehiculos</TableHead>
-					  <TableHead className="w-[100px]">Reporte</TableHead>
+					  <TableHead className="hidden md:table-cell w-[50px]">Vehiculos</TableHead>
+					  <TableHead className="text-right pr-12 w-[100px]">Reporte</TableHead>
 				  </TableRow>
 			  </TableHeader>
 			  <TableBody>
 				  {reports && reports?.data?.map(report => (
 					  <TableRow key={report?.id}>
-						  <TableCell className="hidden md:table-cell">#{report?.id}</TableCell>
+						  <TableCell className="pl-8 hidden md:table-cell">{report?.id}</TableCell>
 						  <TableCell className={'text-xs'}>{report?.contractor?.name}</TableCell>
 						  <TableCell className={'text-xs'}>{dayjs(report?.date, "YYYY-MM-DD").format("DD/MM/YYYY")}</TableCell>
 						  <TableCell>{report?.shift?.type}</TableCell>
 						  <TableCell className="hidden md:table-cell"><Badge variant={'outline'}>{report?.navixy_id}</Badge></TableCell>
 						  <TableCell className="hidden md:table-cell">{report?.vehicles?.length}</TableCell>
-						  <TableCell>
+						  <TableCell className={'text-right pr-8'}>
 							  <Button variant={'outline'} onClick={() => handleOpenDialog(report)}>
 								  Ver reporte
 							  </Button>
@@ -101,7 +104,7 @@ export default function Inactivity() {
 		  </Table>
 		  <Drawer open={open} onOpenChange={setOpen}>
 			  <DrawerContent>
-				  <div className="mx-auto w-full max-w-sm">
+				  <div className="mx-auto w-full max-w-sm pb-8">
 					  <DrawerHeader>
 						  <Badge> Navixy {selectedReport?.navixy_id}</Badge>
 						  <DrawerTitle>Reporte de Inactividad</DrawerTitle>
@@ -140,35 +143,39 @@ export default function Inactivity() {
 			  </DrawerContent>
 		  </Drawer>
 		  <Dialog open={openReport} onOpenChange={setOpenReport}>
-			  <DialogContent className="sm:max-w-[90%] h-[90%]">
+			  <DialogContent className={'sm:max-w-[Npx]'}>
 				  <DialogHeader>
 					  <DialogTitle>Reporte de Inactividad</DialogTitle>
 					  <DialogDescription>
 						  {selectedReport?.contractor?.name.toUpperCase()} - {dayjs(selectedReport?.date).format('DD/MM/YYYY')}
 					  </DialogDescription>
 				  </DialogHeader>
-				  <Table>
-					  <TableHeader>
-						  <TableRow>
-							  <TableHead className="w-[100px]">Vehículo</TableHead>
-							  <TableHead className="w-[100px] text-right">Períodos ociosos</TableHead>
-							  <TableHead className="w-[100px] text-right">Duración inactivo</TableHead>
-							  <TableHead className="w-[100px] text-right">Ingnición ON</TableHead>
-							  <TableHead className="w-[100px] text-right">Ingnición ON %</TableHead>
-						  </TableRow>
-					  </TableHeader>
-					  <TableBody>
-						  {selectedReport?.navixy_response?.report?.sheets?.map((vehicle) => (
-							  <TableRow key={vehicle.header}>
-								  <TableCell className="font-medium text-xs">{vehicle.header}</TableCell>
-								  <TableCell className="text-right text-xs">{vehicle.sections[0].text === 'Sin tiempo de inactividad en el período especificado.' ? '---' : vehicle.sections[1].rows.find(row => row.name === 'Duración inactivo').v}</TableCell>
-								  <TableCell className="text-right text-xs">{vehicle.sections[1]?.rows.find(row => row.name === 'Períodos ociosos').v || '---'}</TableCell>
-								  <TableCell className="text-right text-xs">{vehicle.sections[1]?.rows.find(row => row.name === 'Duración inactivo').v || '---'}</TableCell>
-								  <TableCell className="text-right text-xs">{vehicle.sections[1]?.rows.find(row => row.name === "\"Ingnición ON\" porcentaje, %").v || '---'}</TableCell>
+				  <div className={'border rounded-xl px-6 py-2 border-gray-200'}>
+					  <Table>
+						  <TableHeader>
+							  <TableRow>
+								  <TableHead className="w-[100px]">Vehículo</TableHead>
+								  <TableHead className="w-[100px] text-right">No operativo</TableHead>
+								  <TableHead className="w-[100px] text-right">{'Operativo > 5'}</TableHead>
+								  <TableHead className="w-[100px] text-right">{'Operativo < 5'}</TableHead>
+								  <TableHead className="w-[100px] text-right">Fuera</TableHead>
+								  <TableHead className="w-[100px] text-right">Tiempo efectivo</TableHead>
 							  </TableRow>
-						  ))}
-					  </TableBody>
-				  </Table>
+						  </TableHeader>
+						  <TableBody>
+							  {selectedReport?.navixy_response?.report?.sheets?.map((vehicle) => (
+								  <TableRow key={vehicle.header}>
+									  <TableCell className="font-medium text-xs">{vehicle.header}</TableCell>
+									  <TableCell className="text-right text-xs">{vehicle.sections[0].text === 'Sin tiempo de inactividad en el período especificado.' ? '---' : vehicle.sections[1].rows.find(row => row.name === 'Duración inactivo').v}</TableCell>
+									  <TableCell className="text-right text-xs">{vehicle.sections[1]?.rows.find(row => row.name === 'Períodos ociosos').v || '---'}</TableCell>
+									  <TableCell className="text-right text-xs">{vehicle.sections[1]?.rows.find(row => row.name === 'Duración inactivo').v || '---'}</TableCell>
+									  <TableCell className="text-right text-xs">{vehicle.sections[1]?.rows.find(row => row.name === "\"Ingnición ON\" porcentaje, %").v || '---'}</TableCell>
+									  <TableCell className="text-right text-xs">{vehicle.sections[1]?.rows.find(row => row.name === "\"Ingnición ON\" porcentaje, %").v || '---'}</TableCell>
+								  </TableRow>
+							  ))}
+						  </TableBody>
+					  </Table>
+				  </div>
 			  </DialogContent>
 		  </Dialog>
 	  </div>
