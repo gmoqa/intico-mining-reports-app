@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/drawer"
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {Card, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
-import {Download, GalleryVerticalEnd, TrendingDownIcon, TrendingUpIcon} from "lucide-react";
+import {Calendar, Download, GalleryVerticalEnd, TrendingDownIcon, TrendingUpIcon} from "lucide-react";
 import {
 	Dialog,
 	DialogContent,
@@ -88,8 +88,8 @@ export default function Inactivity() {
 				  {reports && reports?.data?.map(report => (
 					  <TableRow key={report?.id}>
 						  <TableCell className="pl-8 hidden md:table-cell">{report?.id}</TableCell>
-						  <TableCell className={'text-xs'}>{report?.contractor?.name}</TableCell>
-						  <TableCell className={'text-xs'}>{dayjs(report?.date, "YYYY-MM-DD").format("DD/MM/YYYY")}</TableCell>
+						  <TableCell>{report?.contractor?.name}</TableCell>
+						  <TableCell>{dayjs(report?.date, "YYYY-MM-DD").format("DD/MM/YYYY")}</TableCell>
 						  <TableCell>{report?.shift?.type}</TableCell>
 						  <TableCell className="hidden md:table-cell"><Badge variant={'outline'}>{report?.navixy_id}</Badge></TableCell>
 						  <TableCell className="hidden md:table-cell">{report?.vehicles?.length}</TableCell>
