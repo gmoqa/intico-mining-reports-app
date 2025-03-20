@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table"
 import {useEffect, useState} from "react";
 import { Badge } from "@/components/ui/badge"
-
+import {CheckCircle2Icon, ChevronRight} from "lucide-react"
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
@@ -55,7 +55,7 @@ export default function Inactivity() {
 	const [selectedReport, setSelectedReport] = useState(null)
 
 	useEffect(() => {
-		fetch('https://fenec.duckdns.org/api/reports?populate=*')
+		fetch('https://fenec.duckdns.org/api/reports?populate=*&sort=date:desc')
 			.then(response => response.json())
 			.then(data => setReports(data));
 	}, []);
@@ -91,8 +91,7 @@ export default function Inactivity() {
 				  <TableRow>
 					  <TableHead className="pl-8 hidden md:table-cell w-[100px]">ID</TableHead>
 					  <TableHead className="w-[100px]">Contratista</TableHead>
-					  <TableHead className="w-[100px]">Fecha</TableHead>
-					  <TableHead className="w-[50px]">Turno</TableHead>
+					  <TableHead className="w-[100px]">Turno</TableHead>
 					  <TableHead className="hidden md:table-cell w-[60px]">Navixy ID</TableHead>
 					  <TableHead className="hidden md:table-cell w-[50px]">Vehiculos</TableHead>
 					  <TableHead className="text-right pr-12 w-[100px]">Reporte</TableHead>
@@ -103,13 +102,20 @@ export default function Inactivity() {
 					  <TableRow key={report?.id}>
 						  <TableCell className="pl-8 hidden md:table-cell">{report?.id}</TableCell>
 						  <TableCell>{report?.contractor?.name}</TableCell>
-						  <TableCell>{dayjs(report?.date, "YYYY-MM-DD").format("DD/MM/YYYY")}</TableCell>
-						  <TableCell>{report?.shift?.type}</TableCell>
+						  <TableCell>
+							  <Badge
+								  variant="outline"
+								  className="flex gap-1 px-1.5 [&_svg]:size-3"
+							  >
+								  <Calendar className="text-green-500 dark:text-green-400" />
+								  {dayjs(report?.date, "YYYY-MM-DD").format("DD/MM/YY")} - {report?.shift?.type}
+							  </Badge>
+						  </TableCell>
 						  <TableCell className="hidden md:table-cell"><Badge variant={'outline'}>{report?.navixy_id}</Badge></TableCell>
 						  <TableCell className="hidden md:table-cell">{report?.vehicles?.length}</TableCell>
 						  <TableCell className={'text-right pr-8'}>
 							  <Button variant={'outline'} onClick={() => handleOpenDialog(report)}>
-								  Ver reporte
+								  Reporte
 							  </Button>
 						  </TableCell>
 					  </TableRow>
