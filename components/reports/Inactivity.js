@@ -133,7 +133,7 @@ export default function Inactivity() {
 						  <DrawerDescription>TURNO {selectedReport?.shift?.type}</DrawerDescription>
 						  <Badge variant={'outline'} className={'mt-2'}>{selectedReport?.vehicles?.length} Vehículos</Badge>
 					  </DrawerHeader>
-					  <ScrollArea className="h-72 px-2">
+					  <ScrollArea className="h-72">
 						  <Table className={''}>
 							  <TableHeader>
 								  <TableRow>
@@ -163,80 +163,78 @@ export default function Inactivity() {
 			  </DrawerContent>
 		  </Drawer>
 		  <Dialog open={openReport} onOpenChange={setOpenReport}>
-			  <DialogContent className={'sm:max-w-[80%]'}>
+			  <DialogContent className={'sm:max-w-[90%]'}>
 				  <DialogHeader>
 					  <DialogTitle>Reporte de Inactividad</DialogTitle>
 					  <DialogDescription>
 						  {selectedReport?.contractor?.name.toUpperCase()} - {dayjs(selectedReport?.date).format('DD/MM/YYYY')}
 					  </DialogDescription>
 				  </DialogHeader>
-				  <div className={'border rounded-xl px-4 py-1 border-gray-200'}>
-					  <Table>
-						  <TableHeader>
-							  <TableRow>
-								  <TableHead className="w-[100px]">Vehículo</TableHead>
-								  <TableHead className="w-[100px] text-right">NO OP.</TableHead>
-								  <TableHead className="w-[100px] text-right">{'OP. > 5'}</TableHead>
-								  <TableHead className="w-[100px] text-right">{'OP. < 5'}</TableHead>
-								  <TableHead className="w-[100px] text-right">GEN</TableHead>
-								  <TableHead className="w-[100px] text-right">FUERA</TableHead>
-								  <TableHead className="w-[100px] text-right">EFECT.</TableHead>
+				  <Table>
+					  <TableHeader>
+						  <TableRow>
+							  <TableHead>Vehículo</TableHead>
+							  <TableHead className="text-right">NO OP</TableHead>
+							  <TableHead className="text-right">{'OP > 5'}</TableHead>
+							  <TableHead className="text-right">{'OP < 5'}</TableHead>
+							  <TableHead className="text-right">GEN</TableHead>
+							  <TableHead className="text-right">FUERA</TableHead>
+							  <TableHead className="text-right">EFECT.</TableHead>
+						  </TableRow>
+					  </TableHeader>
+					  <TableBody>
+						  {selectedReport?.navixy_response?.report?.sheets?.map((vehicle) => (
+							  <TableRow key={vehicle.header}>
+								  <TableCell>{vehicle.header}</TableCell>
+								  <TableCell className="text-right">
+									  {formatSecondsToHHMMSS(vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
+										  .filter(row => {
+											  const addresses = row.address.v.split(']')[0].slice(1).split(',').map(item => item.trim());
+											  return addresses.some(address => address.startsWith(vehicle?.header.split('-').slice(0, 2).join('-')  + '-NOP'));
+										  })
+										  .reduce((total, row) => total + (row.idle_duration?.raw || 0), 0))}
+								  </TableCell>
+								  <TableCell className="text-right">
+									  {formatSecondsToHHMMSS(vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
+										  .filter(row => {
+											  const addresses = row.address.v.split(']')[0].slice(1).split(',').map(item => item.trim());
+											  return addresses.some(address => address.startsWith(vehicle?.header.split('-').slice(0, 2).join('-')  + '-OP'));
+										  })
+										  .filter(row => row.idle_duration?.raw > 300)
+										  .reduce((total, row) => total + (row.idle_duration?.raw || 0), 0))}
+								  </TableCell>
+								  <TableCell className="text-right">
+									  {formatSecondsToHHMMSS(vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
+										  .filter(row => {
+											  const addresses = row.address.v.split(']')[0].slice(1).split(',').map(item => item.trim());
+											  return addresses.some(address => address.startsWith(vehicle?.header.split('-').slice(0, 2).join('-')  + '-GEN'));
+										  })
+										  .reduce((total, row) => total + (row.idle_duration?.raw || 0), 0))}
+								  </TableCell>
+								  <TableCell className="text-right">
+									  {formatSecondsToHHMMSS(vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
+										  .filter(row => {
+											  const addresses = row.address.v.split(']')[0].slice(1).split(',').map(item => item.trim());
+											  return addresses.some(address => address.startsWith(vehicle?.header.split('-').slice(0, 2).join('-')  + '-OP'));
+										  })
+										  .filter(row => row.idle_duration?.raw < 300)
+										  .reduce((total, row) => total + (row.idle_duration?.raw || 0), 0))}
+								  </TableCell>
+								  <TableCell className="text-right">
+									  {formatSecondsToHHMMSS(vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
+										  .filter(row => {
+											  const addresses = row.address.v.split(']')[0].slice(1).split(',').map(item => item.trim());
+											  return addresses.length === 0;
+										  })
+										  .reduce((total, row) => total + (row.idle_duration?.raw || 0), 0))}
+								  </TableCell>
+								  <TableCell className="text-right">
+									  --
+								  </TableCell>
 							  </TableRow>
-						  </TableHeader>
-						  <TableBody>
-							  {selectedReport?.navixy_response?.report?.sheets?.map((vehicle) => (
-								  <TableRow key={vehicle.header}>
-									  <TableCell className="font-medium font-semibold">{vehicle.header}</TableCell>
-									  <TableCell className="text-right">
-										  {formatSecondsToHHMMSS(vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
-											  .filter(row => {
-												  const addresses = row.address.v.split(']')[0].slice(1).split(',').map(item => item.trim());
-												  return addresses.some(address => address.startsWith(vehicle?.header.split('-').slice(0, 2).join('-')  + '-NOP'));
-											  })
-											  .reduce((total, row) => total + (row.idle_duration?.raw || 0), 0))}
-									  </TableCell>
-									  <TableCell className="text-right">
-										  {formatSecondsToHHMMSS(vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
-											  .filter(row => {
-												  const addresses = row.address.v.split(']')[0].slice(1).split(',').map(item => item.trim());
-												  return addresses.some(address => address.startsWith(vehicle?.header.split('-').slice(0, 2).join('-')  + '-OP'));
-											  })
-											  .filter(row => row.idle_duration?.raw > 300)
-											  .reduce((total, row) => total + (row.idle_duration?.raw || 0), 0))}
-									  </TableCell>
-									  <TableCell className="text-right">
-										  {formatSecondsToHHMMSS(vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
-											  .filter(row => {
-												  const addresses = row.address.v.split(']')[0].slice(1).split(',').map(item => item.trim());
-												  return addresses.some(address => address.startsWith(vehicle?.header.split('-').slice(0, 2).join('-')  + '-GEN'));
-											  })
-											  .reduce((total, row) => total + (row.idle_duration?.raw || 0), 0))}
-									  </TableCell>
-									  <TableCell className="text-right">
-										  {formatSecondsToHHMMSS(vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
-											  .filter(row => {
-												  const addresses = row.address.v.split(']')[0].slice(1).split(',').map(item => item.trim());
-												  return addresses.some(address => address.startsWith(vehicle?.header.split('-').slice(0, 2).join('-')  + '-OP'));
-											  })
-											  .filter(row => row.idle_duration?.raw < 300)
-											  .reduce((total, row) => total + (row.idle_duration?.raw || 0), 0))}
-									  </TableCell>
-									  <TableCell className="text-right">
-										  {formatSecondsToHHMMSS(vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
-											  .filter(row => {
-												  const addresses = row.address.v.split(']')[0].slice(1).split(',').map(item => item.trim());
-												  return addresses.length === 0;
-											  })
-											  .reduce((total, row) => total + (row.idle_duration?.raw || 0), 0))}
-									  </TableCell>
-									  <TableCell className="text-right">
-										  --
-									  </TableCell>
-								  </TableRow>
-							  ))}
-						  </TableBody>
-					  </Table>
-				  </div>
+						  ))}
+					  </TableBody>
+				  </Table>
 			  </DialogContent>
 		  </Dialog>
 	  </div>
