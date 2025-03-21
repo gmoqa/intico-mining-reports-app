@@ -89,8 +89,8 @@ export default function Inactivity() {
 		  <Table>
 			  <TableHeader>
 				  <TableRow>
-					  <TableHead className="pl-8 hidden md:table-cell w-[100px]">ID</TableHead>
-					  <TableHead className="w-[100px]">Contratista</TableHead>
+					  <TableHead className="hidden md:table-cell w-[100px]">ID</TableHead>
+					  <TableHead className="pl-3 md:pl-0 w-[100px]">Contratista</TableHead>
 					  <TableHead className="w-[100px]">Turno</TableHead>
 					  <TableHead className="hidden md:table-cell w-[60px]">Navixy ID</TableHead>
 					  <TableHead className="hidden md:table-cell w-[50px]">Vehiculos</TableHead>
@@ -101,7 +101,7 @@ export default function Inactivity() {
 				  {reports && reports?.data?.map(report => (
 					  <TableRow key={report?.id}>
 						  <TableCell className="pl-8 hidden md:table-cell">{report?.id}</TableCell>
-						  <TableCell>{report?.contractor?.name}</TableCell>
+						  <TableCell className={'pl-3 md:pl-0 w-[100px]'}>{report?.contractor?.name}</TableCell>
 						  <TableCell>
 							  <Badge
 								  variant="outline"
@@ -124,7 +124,7 @@ export default function Inactivity() {
 		  </Table>
 		  <Drawer open={open} onOpenChange={setOpen}>
 			  <DrawerContent>
-				  <div className="mx-auto w-full max-w-sm pb-8">
+				  <div className="mx-auto w-full  max-w-sm pb-8">
 					  <DrawerHeader>
 						  <Badge> Navixy {selectedReport?.navixy_id}</Badge>
 						  <DrawerTitle>Reporte de Inactividad</DrawerTitle>
