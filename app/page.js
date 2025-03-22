@@ -13,7 +13,9 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { signIn } from "@/auth"
 import Inactivity from "@/components/reports/Inactivity";
+import SignIn from "@/components/sign-in";
 
 export default function Page() {
   return (
@@ -38,6 +40,7 @@ export default function Page() {
             </Breadcrumb>
           </header>
           <Inactivity />
+          <SignIn />
         </SidebarInset>
       </SidebarProvider>
   )
