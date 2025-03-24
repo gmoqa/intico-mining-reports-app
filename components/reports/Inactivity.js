@@ -28,7 +28,7 @@ import {
 	DrawerTitle,
 } from "@/components/ui/drawer"
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { CalendarIcon, SearchX, FileX2 } from "lucide-react";
+import { CalendarIcon, SearchX, FileX2, MoonIcon, SunIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar"
 import {
 	Dialog,
@@ -55,7 +55,7 @@ function buildReportsURL({ page, shiftType, contractorFilter, selectedDate }) {
 	let url = `https://fenec.duckdns.org/api/reports?pagination[page]=${page}&pagination[pageSize]=10`
 	url += `&fields[0]=id&fields[1]=date&fields[2]=navixy_id&fields[3]=navixy_response`
 	url += `&populate[vehicles][fields][0]=id`
-	url += `&populate[contractor][fields][0]=name`
+	url += `&populate[contractor][fields][0]=name&populate[contractor][fields][1]=code`
 	url += `&populate[shift][fields][0]=type&populate[shift][fields][1]=start_time&populate[shift][fields][2]=end_time`
 
 	if (shiftType) {
@@ -207,11 +207,8 @@ export default function Inactivity() {
 							{/* Mobile + Desktop: Contratista + Fecha/Turno */}
 							<TableCell className="md:hidden">
 								<div className="flex flex-col">
-									<span>{report.contractor?.name.toUpperCase()}</span>
-									<span className="text-xs text-muted-foreground">
-							          {dayjs(report.date).format("DD/MM/YY")}
-							        </span>
-								TURNO {report.shift?.type}
+									<span className={'text-gray-900'}>{report.contractor?.name.toUpperCase()}</span>
+									<Badge variant={'outline'}>{dayjs(report.date).format("DD/MM/YY")} - TURNO {report.shift?.type}</Badge>
 								</div>
 							</TableCell>
 
