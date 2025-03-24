@@ -182,7 +182,7 @@ export default function Inactivity() {
 				<TableRow>
 					<TableHead className="hidden md:table-cell">ID</TableHead>
 					<TableHead>Contratista</TableHead>
-					<TableHead>Turno</TableHead>
+					<TableHead className="hidden md:table-cell">Turno</TableHead>
 					<TableHead className="hidden md:table-cell">Navixy ID</TableHead>
 					<TableHead className="hidden md:table-cell">Vehículos</TableHead>
 					<TableHead className="text-right">Reporte</TableHead>
@@ -203,16 +203,45 @@ export default function Inactivity() {
 				) : (
 					reports?.data?.map((report) => (
 						<TableRow key={report.id}>
-							<TableCell className="hidden md:table-cell">{report.id}</TableCell>
-							<TableCell>{report.contractor?.name.toUpperCase()}</TableCell>
-							<TableCell>
-								<Badge variant="outline" className="flex gap-1 px-1.5 [&_svg]:size-3">
+							<TableCell className="hidden md:table-cell">#{report.id}</TableCell>
+							{/* Mobile + Desktop: Contratista + Fecha/Turno */}
+							<TableCell className="md:hidden">
+								<div className="flex flex-col">
+									<span>{report.contractor?.name.toUpperCase()}</span>
+									<span className="text-xs text-muted-foreground">
+							          {dayjs(report.date).format("DD/MM/YY")}
+							        </span>
+								TURNO {report.shift?.type}
+								</div>
+							</TableCell>
+
+							{/* Desktop only: Contratista */}
+							<TableCell className="hidden md:table-cell">
+								{report.contractor?.name.toUpperCase()}
+							</TableCell>
+
+							{/* Desktop only: Turno */}
+							<TableCell className="hidden md:table-cell">
+								<Badge
+									variant="outline"
+									className="flex gap-1 px-1.5 [&_svg]:size-3"
+								>
 									<CalendarIcon className="text-green-500 dark:text-green-400" />
 									{dayjs(report.date).format("DD/MM/YY")} - {report.shift?.type}
 								</Badge>
 							</TableCell>
-							<TableCell className="hidden md:table-cell"><Badge variant="outline">{report.navixy_id}</Badge></TableCell>
-							<TableCell className="hidden md:table-cell">{report.vehicles?.length}</TableCell>
+
+							{/* Desktop only: Navixy ID */}
+							<TableCell className="hidden md:table-cell">
+								<Badge variant="outline">{report.navixy_id}</Badge>
+							</TableCell>
+
+							{/* Desktop only: Vehículos */}
+							<TableCell className="hidden md:table-cell">
+								{report.vehicles?.length}
+							</TableCell>
+
+							{/* Botón Reporte (siempre visible) */}
 							<TableCell className="text-right">
 								<Button variant="outline" onClick={() => handleOpenDialog(report)}>
 									Reporte
