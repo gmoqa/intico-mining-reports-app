@@ -1,23 +1,23 @@
 'use client'
 
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table"
-import { useState } from "react";
-import { Badge } from "@/components/ui/badge"
-import dayjs from 'dayjs';
+import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import timezone from 'dayjs/plugin/timezone'
-import { Button } from "@/components/ui/button";
-dayjs.extend(utc)
-dayjs.extend(timezone)
-dayjs.tz.setDefault("America/Santiago")
+import useSWR from 'swr'
+import { es } from 'date-fns/locale'
 
+import { CalendarIcon, SunIcon, MoonIcon, Car, Truck } from 'lucide-react'
+
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle
+} from '@/components/ui/dialog'
 import {
 	Drawer,
 	DrawerClose,
@@ -25,29 +25,34 @@ import {
 	DrawerDescription,
 	DrawerFooter,
 	DrawerHeader,
-	DrawerTitle,
-} from "@/components/ui/drawer"
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { CalendarIcon, SearchX, FileX2, MoonIcon, SunIcon } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar"
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+	DrawerTitle
+} from '@/components/ui/drawer'
 import {
 	Pagination,
 	PaginationContent,
 	PaginationItem,
-	PaginationLink, PaginationNext,
+	PaginationLink,
+	PaginationNext,
 	PaginationPrevious
-} from "@/components/ui/pagination";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import useSWR from "swr";
+} from '@/components/ui/pagination'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow
+} from '@/components/ui/table'
+
+import { useState } from 'react'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+dayjs.tz.setDefault("America/Santiago")
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
@@ -127,6 +132,7 @@ export default function Inactivity() {
 					</PopoverTrigger>
 					<PopoverContent className="w-auto p-0" align="start">
 						<Calendar
+							locale={es}
 							mode="single"
 							selected={selectedDate}
 							onSelect={(date) => {
@@ -205,12 +211,40 @@ export default function Inactivity() {
 						<TableRow key={report.id}>
 							<TableCell className="hidden md:table-cell">#{report.id}</TableCell>
 							{/* Mobile + Desktop: Contratista + Fecha/Turno */}
-							<TableCell className="md:hidden">
-								<div className="flex flex-col">
-									<span className={'text-gray-900'}>{report.contractor?.name.toUpperCase()}</span>
-									<Badge variant={'outline'}>{dayjs(report.date).format("DD/MM/YY")} - TURNO {report.shift?.type}</Badge>
+							<TableCell className="md:hidden py-4">
+								<div className="flex flex-col gap-1.5">
+									{/* Nombre del contratista */}
+									<span className="text-sm font-semibold text-foreground tracking-tight leading-tight">
+								      {report.contractor?.name.toUpperCase()}
+								    </span>
+
+									<div className="flex flex-wrap items-center gap-2 mt-2">
+										<Badge variant="outline" className="text-xs">
+											<CalendarIcon className="w-3 h-3 mr-1" />
+											{dayjs(report.date).format("DD/MM/YY")}
+										</Badge>
+										<Badge   className={`text-xs text-white ${
+											report.shift?.type === "DIA"
+												? "bg-yellow-500"
+												: report.shift?.type === "NOCHE"
+													? "bg-slate-700"
+													: "bg-gray-400"
+										}`}>
+											{report.shift?.type === 'DIA' ? (
+												<SunIcon className="w-3 h-3 mr-1" />
+											) : (
+												<MoonIcon className="w-3 h-3 mr-1" />
+											)}
+											{report.shift?.type}
+										</Badge>
+										<Badge className="text-xs bg-amber-300 text-foreground">
+											<Truck className="w-3 h-3 mr-1" />
+											{report.vehicles?.length}
+										</Badge>
+									</div>
 								</div>
 							</TableCell>
+
 
 							{/* Desktop only: Contratista */}
 							<TableCell className="hidden md:table-cell">
