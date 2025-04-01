@@ -63,6 +63,9 @@ function buildReportsURL({ page, shiftType, contractorFilter, selectedDate }) {
 	url += `&populate[contractor][fields][0]=name&populate[contractor][fields][1]=code`
 	url += `&populate[shift][fields][0]=type&populate[shift][fields][1]=start_time&populate[shift][fields][2]=end_time`
 
+	// Ordenar por fecha descendente
+	url += `&sort[0]=date:desc`
+
 	if (shiftType) {
 		url += `&filters[shift][type][$eq]=${shiftType}`
 	}
