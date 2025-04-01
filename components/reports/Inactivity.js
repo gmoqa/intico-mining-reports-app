@@ -380,6 +380,8 @@ export default function Inactivity() {
 							<TableHead className="text-right">{'Operativo > 5'}</TableHead>
 							<TableHead className="text-right">{'Operativo < 5'}</TableHead>
 							<TableHead className="text-right">Horas ON</TableHead>
+							<TableHead className="text-right">Horas OFF</TableHead>
+							<TableHead className="text-right">Horas totales</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
@@ -432,7 +434,22 @@ export default function Inactivity() {
 											.reduce((total, row) => total + (row.ignition_on?.raw || 0), 0)
 									)}
 								</TableCell>
-
+								<TableCell className="text-right">
+									{formatSecondsToHHMMSS(
+										vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
+											.reduce((total, row) => {
+												const ignition = row.ignition_on?.raw || 0;
+												const idle = row.idle_duration?.raw || 0;
+												return total + Math.max(idle - ignition, 0);
+											}, 0)
+									)}
+								</TableCell>
+								<TableCell className="text-right">
+									{formatSecondsToHHMMSS(
+										vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
+											.reduce((total, row) => total + (row.idle_duration?.raw || 0), 0)
+									)}
+								</TableCell>
 							</TableRow>
 						))}
 					</TableBody>
