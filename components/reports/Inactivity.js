@@ -6,7 +6,7 @@ import timezone from 'dayjs/plugin/timezone'
 import useSWR from 'swr'
 import { es } from 'date-fns/locale'
 
-import { CalendarIcon, SunIcon, MoonIcon, Car, Truck } from 'lucide-react'
+import {CalendarIcon, SunIcon, MoonIcon, Car, Truck, LoaderIcon, Loader2} from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -58,8 +58,7 @@ const fetcher = (url) => fetch(url).then((res) => res.json());
 
 function buildReportsURL({ page, shiftType, contractorFilter, selectedDate }) {
 	let url = `https://fenec.duckdns.org/api/reports?pagination[page]=${page}&pagination[pageSize]=10`
-	url += `&fields[0]=id&fields[1]=date&fields[2]=navixy_id&fields[3]=navixy_response`
-	url += `&populate[vehicles][fields][0]=id`
+	url += `&fields[0]=id&fields[1]=date&fields[2]=navixy_id`
 	url += `&populate[contractor][fields][0]=name&populate[contractor][fields][1]=code`
 	url += `&populate[shift][fields][0]=type&populate[shift][fields][1]=start_time&populate[shift][fields][2]=end_time`
 
@@ -100,10 +99,23 @@ export default function Inactivity() {
 
 	const pageCount = reports?.meta?.pagination?.pageCount || 1;
 
-	const handleOpenDialog = (report) => {
-		setSelectedReport(report);
+	const handleOpenDialog = async (report) => {
 		setOpen(true);
+		setSelectedReport(null);
+		try {
+			const detailedReport = await fetchReportDetail(report.id);
+			setSelectedReport(detailedReport);
+		} catch (err) {
+			console.error(err);
+		}
 	};
+
+	async function fetchReportDetail(reportId) {
+		const res = await fetch(`https://fenec.duckdns.org/api/reports?filters[id][$eq]=${reportId}&populate=*`)
+		if (!res.ok) throw new Error("No se pudo obtener el detalle del reporte");
+		const json = await res.json();
+		return json.data[0];
+	}
 
 	const handleOpenReportDialog = () => {
 		setOpen(false);
@@ -194,7 +206,6 @@ export default function Inactivity() {
 					<TableHead>Contratista</TableHead>
 					<TableHead className="hidden md:table-cell">Turno</TableHead>
 					<TableHead className="hidden md:table-cell">Navixy ID</TableHead>
-					<TableHead className="hidden md:table-cell">Vehículos</TableHead>
 					<TableHead className="text-right">Reporte</TableHead>
 				</TableRow>
 			</TableHeader>
@@ -206,7 +217,6 @@ export default function Inactivity() {
 							<TableCell><Skeleton className="h-4 w-24" /></TableCell>
 							<TableCell><Skeleton className="h-4 w-24" /></TableCell>
 							<TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-20" /></TableCell>
-							<TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-10" /></TableCell>
 							<TableCell className="text-right"><Skeleton className="h-8 w-20" /></TableCell>
 						</TableRow>
 					))
@@ -271,11 +281,6 @@ export default function Inactivity() {
 								<Badge variant="outline">{report.navixy_id}</Badge>
 							</TableCell>
 
-							{/* Desktop only: Vehículos */}
-							<TableCell className="hidden md:table-cell">
-								{report.vehicles?.length}
-							</TableCell>
-
 							{/* Botón Reporte (siempre visible) */}
 							<TableCell className="text-right">
 								<Button variant="outline" onClick={() => handleOpenDialog(report)}>
@@ -324,42 +329,49 @@ export default function Inactivity() {
 
 		<Drawer open={open} onOpenChange={setOpen}>
 			<DrawerContent>
-				<div className="mx-auto w-full  max-w-sm pb-8">
-					<DrawerHeader>
-						<Badge> Navixy {selectedReport?.navixy_id}</Badge>
-						<DrawerTitle>Reporte de Inactividad</DrawerTitle>
-						<DrawerDescription>{dayjs(selectedReport?.date).format('DD/MM/YYYY')}</DrawerDescription>
-						<DrawerTitle>{selectedReport?.contractor?.name.toUpperCase()}</DrawerTitle>
-						<DrawerDescription>TURNO {selectedReport?.shift?.type} - {selectedReport?.shift?.start_time.slice(0, 5) } / {selectedReport?.shift?.end_time.slice(0, 5)}</DrawerDescription>
-						<Badge variant={'outline'} className={'mt-2'}>{selectedReport?.vehicles?.length} Vehículos</Badge>
-					</DrawerHeader>
-					<ScrollArea className="h-72">
-						<Table className={''}>
-							<TableHeader>
-								<TableRow>
-									<TableHead className="w-[100px]">Vehículo</TableHead>
-									<TableHead className="text-right">Inactividad</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{selectedReport?.navixy_response?.report?.sheets?.map((vehicle) => (
-									<TableRow key={vehicle.header}>
-										<TableCell className="font-medium text-xs">{vehicle.header}</TableCell>
-										<TableCell className="text-right text-xs">{vehicle.sections[0].text === 'Sin tiempo de inactividad en el período especificado.' ? 'Sin Inactividad' : vehicle.sections[1].rows.find(row => row.name === 'Duración inactivo').v}</TableCell>
-										<TableCell>
-										</TableCell>
+				<DrawerTitle className="hidden">Reporte de Inactividad</DrawerTitle>
+				{!selectedReport ? (
+					<div className="flex h-64 flex-col items-center justify-center gap-2">
+						<Loader2 className="w-12 h-12 animate-spin text-orange-500" />
+						<p className="text-muted-foreground">Cargando reporte</p>
+					</div>
+				) : (
+					<div className="mx-auto w-full  max-w-sm pb-8">
+						<DrawerHeader>
+							<Badge> Navixy {selectedReport?.navixy_id}</Badge>
+							<DrawerDescription>{dayjs(selectedReport?.date).format('DD/MM/YYYY')}</DrawerDescription>
+							<DrawerTitle>{selectedReport?.contractor?.name.toUpperCase()}</DrawerTitle>
+							<DrawerDescription>TURNO {selectedReport?.shift?.type} - {selectedReport?.shift?.start_time.slice(0, 5) } / {selectedReport?.shift?.end_time.slice(0, 5)}</DrawerDescription>
+							<Badge variant={'outline'} className={'mt-2'}>{selectedReport?.vehicles?.length} Vehículos</Badge>
+						</DrawerHeader>
+						<ScrollArea className="h-72">
+							<Table className={''}>
+								<TableHeader>
+									<TableRow>
+										<TableHead className="w-[100px]">Vehículo</TableHead>
+										<TableHead className="text-right">Inactividad</TableHead>
 									</TableRow>
-								))}
-							</TableBody>
-						</Table>
-					</ScrollArea>
-					<DrawerFooter>
-						<Button onClick={() => handleOpenReportDialog()}>Ver reporte completo</Button>
-						<DrawerClose asChild>
-							<Button variant="outline">Volver</Button>
-						</DrawerClose>
-					</DrawerFooter>
-				</div>
+								</TableHeader>
+								<TableBody>
+									{selectedReport?.navixy_response?.report?.sheets?.map((vehicle) => (
+										<TableRow key={vehicle.header}>
+											<TableCell className="font-medium text-xs">{vehicle.header}</TableCell>
+											<TableCell className="text-right text-xs">{vehicle.sections[0].text === 'Sin tiempo de inactividad en el período especificado.' ? 'Sin Inactividad' : vehicle.sections[1].rows.find(row => row.name === 'Duración inactivo').v}</TableCell>
+											<TableCell>
+											</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+						</ScrollArea>
+						<DrawerFooter>
+							<Button onClick={() => handleOpenReportDialog()}>Ver reporte completo</Button>
+							<DrawerClose asChild>
+								<Button variant="outline">Volver</Button>
+							</DrawerClose>
+						</DrawerFooter>
+					</div>
+				)}
 			</DrawerContent>
 		</Drawer>
 		<Dialog open={openReport} onOpenChange={setOpenReport}>
