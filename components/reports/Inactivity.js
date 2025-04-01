@@ -111,7 +111,8 @@ export default function Inactivity() {
 		if (typeof seconds !== 'number') return '--'
 		const hours = Math.floor(seconds / 3600);
 		const minutes = Math.floor((seconds % 3600) / 60);
-		return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+		const seconds2 = Math.floor(seconds % 60);
+		return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds2).padStart(2, '0')}`;
 	}
 
 	return (<>
@@ -365,17 +366,17 @@ export default function Inactivity() {
 					<DialogDescription>
 						{selectedReport?.contractor?.name.toUpperCase()} - {dayjs(selectedReport?.date).format('DD/MM/YYYY')}
 					</DialogDescription>
+					<DialogDescription>Hora ejecución: {dayjs(selectedReport?.createdAt).format('DD/MM/YYYY HH:mm')}
+					</DialogDescription>
 				</DialogHeader>
 				<Table>
 					<TableHeader>
 						<TableRow>
 							<TableHead>Vehículo</TableHead>
 							<TableHead className="text-right">NO OP</TableHead>
-							<TableHead className="text-right">{'OP > 5'}</TableHead>
-							<TableHead className="text-right">{'OP < 5'}</TableHead>
-							<TableHead className="text-right">GEN</TableHead>
-							<TableHead className="text-right">FUERA</TableHead>
-							<TableHead className="text-right">EFECT.</TableHead>
+							<TableHead className="text-right">{'Operativo > 5'}</TableHead>
+							<TableHead className="text-right">{'Operativo < 5'}</TableHead>
+							<TableHead className="text-right">Horas ON</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
@@ -383,12 +384,26 @@ export default function Inactivity() {
 							<TableRow key={vehicle.header}>
 								<TableCell>{vehicle.header}</TableCell>
 								<TableCell className="text-right">
-									{formatSecondsToHHMMSS(vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
-										.filter(row => {
-											const addresses = row.address.v.split(']')[0].slice(1).split(',').map(item => item.trim());
-											return addresses.some(address => address.startsWith(vehicle?.header.split('-').slice(0, 2).join('-')  + '-NOP'));
-										})
-										.reduce((total, row) => total + (row.idle_duration?.raw || 0), 0))}
+									{formatSecondsToHHMMSS(
+										vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
+											.filter(row => {
+												const addresses = row.address.v
+													.split(']')[0]
+													.slice(1)
+													.split(',')
+													.map(item => item.trim());
+
+												const prefix = vehicle?.header.split('-').slice(0, 2).join('-');
+
+												const hasOP = addresses.some(address => address.startsWith(`${prefix}-OP`));
+												const hasNOPorGEN = addresses.some(address =>
+													address.startsWith(`${prefix}-NOP`) || address.startsWith(`${prefix}-GEN`)
+												);
+
+												return hasNOPorGEN && !hasOP;
+											})
+											.reduce((total, row) => total + (row.ignition_on?.raw || 0), 0)
+									)}
 								</TableCell>
 								<TableCell className="text-right">
 									{formatSecondsToHHMMSS(vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
@@ -396,16 +411,8 @@ export default function Inactivity() {
 											const addresses = row.address.v.split(']')[0].slice(1).split(',').map(item => item.trim());
 											return addresses.some(address => address.startsWith(vehicle?.header.split('-').slice(0, 2).join('-')  + '-OP'));
 										})
-										.filter(row => row.idle_duration?.raw > 300)
-										.reduce((total, row) => total + (row.idle_duration?.raw || 0), 0))}
-								</TableCell>
-								<TableCell className="text-right">
-									{formatSecondsToHHMMSS(vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
-										.filter(row => {
-											const addresses = row.address.v.split(']')[0].slice(1).split(',').map(item => item.trim());
-											return addresses.some(address => address.startsWith(vehicle?.header.split('-').slice(0, 2).join('-')  + '-GEN'));
-										})
-										.reduce((total, row) => total + (row.idle_duration?.raw || 0), 0))}
+										.filter(row => row.ignition_on?.raw > 300)
+										.reduce((total, row) => total + (row.ignition_on?.raw || 0), 0))}
 								</TableCell>
 								<TableCell className="text-right">
 									{formatSecondsToHHMMSS(vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
@@ -413,20 +420,16 @@ export default function Inactivity() {
 											const addresses = row.address.v.split(']')[0].slice(1).split(',').map(item => item.trim());
 											return addresses.some(address => address.startsWith(vehicle?.header.split('-').slice(0, 2).join('-')  + '-OP'));
 										})
-										.filter(row => row.idle_duration?.raw < 300)
-										.reduce((total, row) => total + (row.idle_duration?.raw || 0), 0))}
+										.filter(row => row.ignition_on?.raw < 300)
+										.reduce((total, row) => total + (row.ignition_on?.raw || 0), 0))}
 								</TableCell>
 								<TableCell className="text-right">
-									{formatSecondsToHHMMSS(vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
-										.filter(row => {
-											const addresses = row.address.v.split(']')[0].slice(1).split(',').map(item => item.trim());
-											return addresses.length === 0;
-										})
-										.reduce((total, row) => total + (row.idle_duration?.raw || 0), 0))}
+									{formatSecondsToHHMMSS(
+										vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
+											.reduce((total, row) => total + (row.ignition_on?.raw || 0), 0)
+									)}
 								</TableCell>
-								<TableCell className="text-right">
-									--
-								</TableCell>
+
 							</TableRow>
 						))}
 					</TableBody>
