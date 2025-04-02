@@ -376,19 +376,20 @@ export default function Inactivity() {
 		<Dialog open={openReport} onOpenChange={setOpenReport}>
 			<DialogContent className={'sm:max-w-[90%]'}>
 				<DialogHeader>
-					<DialogTitle className="text-xl font-bold text-gray-800">
+					<DialogTitle className="text-xl text-left font-bold text-gray-800">
 						Reporte de Inactividad
 					</DialogTitle>
-					<DialogDescription className="text-sm text-muted-foreground flex items-center gap-2">
+					<DialogDescription className="text-sm text-muted-foreground text-left gap-2">
 						<span className="font-medium text-gray-700">
 							{selectedReport?.contractor?.name.toUpperCase()}
 						</span>
-						—
+					</DialogDescription>
+					<p className="text-left text-sm text-gray-600 flex items-center gap-2 font-medium">
 						<CalendarIcon className="w-4 h-4 text-muted-foreground" />
 						{dayjs(selectedReport?.date).format('DD/MM/YYYY')} - Turno: {selectedReport?.shift?.type.charAt(0).toUpperCase() + selectedReport?.shift?.type.slice(1).toLowerCase()}
-					</DialogDescription>
-					<p className="text-sm text-gray-600 font-medium">
-						Fecha de ejecución:{' '}
+					</p>
+					<p className="text-left text-xs text-gray-600 font-medium">
+						Ejecución:{' '}
 						<span className="font-mono">{dayjs(selectedReport?.createdAt).format('DD/MM/YYYY HH:mm')}</span>
 					</p>
 				</DialogHeader>
