@@ -6,7 +6,7 @@ import timezone from 'dayjs/plugin/timezone'
 import useSWR from 'swr'
 import { es } from 'date-fns/locale'
 
-import {CalendarIcon, SunIcon, MoonIcon, Car, Truck, LoaderIcon, Loader2, Calendar} from 'lucide-react'
+import {CalendarIcon, SunIcon, MoonIcon, Car, Truck, LoaderIcon, Loader2} from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -48,6 +48,7 @@ import {
 } from '@/components/ui/table'
 
 import { useState } from 'react'
+import {Calendar} from "@/components/ui/calendar";
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -134,7 +135,7 @@ export default function Inactivity() {
 		<div className="w-full flex flex-wrap gap-2 px-4 py-3 sm:flex-nowrap sm:gap-4">
 			{/* Filtro por fecha */}
 			<div className="flex-1 min-w-[150px]">
-				<Popover>
+				<Popover modal>
 					<PopoverTrigger asChild>
 						<Button variant="outline" className="w-full justify-start text-left font-normal">
 							<CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
