@@ -406,6 +406,7 @@ export default function Inactivity() {
 								<TableHead className="text-right font-semibold text-gray-600">No Oper</TableHead>
 								<TableHead className="text-right font-semibold text-gray-600">Oper &gt; 5</TableHead>
 								<TableHead className="text-right font-semibold text-gray-600">Oper &lt; 5</TableHead>
+								<TableHead className="text-right font-semibold text-gray-600">Fuera</TableHead>
 								<TableHead className="text-right font-semibold text-gray-600">Hrs On</TableHead>
 								<TableHead className="text-right font-semibold text-gray-600">Hrs Off</TableHead>
 								<TableHead className="text-right font-semibold text-gray-600">Totales</TableHead>
@@ -459,6 +460,27 @@ export default function Inactivity() {
 											})
 											.filter(row => row.ignition_on?.raw < 300)
 											.reduce((total, row) => total + (row.ignition_on?.raw || 0), 0))}
+									</TableCell>
+									<TableCell className="text-right text-sm">
+										{formatSecondsToHHMMSS(
+											vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
+												.filter(row => {
+													try {
+														const rawAddress = row.address.v;
+														if (!rawAddress.includes(']')) return true;
+														const addresses = rawAddress
+															.split(']')[0]
+															.slice(1)
+															.split(',')
+															.map(item => item.trim());
+
+														return !Array.isArray(addresses) || addresses.length === 0;
+													} catch (e) {
+														return true;
+													}
+												})
+												.reduce((total, row) => total + (row.ignition_on?.raw || 0), 0)
+										)}
 									</TableCell>
 									<TableCell className="text-right text-sm">
 										{formatSecondsToHHMMSS(
