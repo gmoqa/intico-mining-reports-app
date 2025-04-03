@@ -76,12 +76,12 @@ function buildReportsURL({ page, shiftType, contractorFilter, selectedDate }) {
 		url += `&filters[date][$eq]=${formattedDate}`
 	}
 
-	url += `&filters[report_type][id][$eq]=1`
+	url += `&filters[report_type][id][$eq]=2`
 
 	return url;
 }
 
-export default function Inactivity() {
+export default function Engines() {
 	const [page, setPage] = useState(1);
 	const [shiftType, setShiftType] = useState(null);
 	const [selectedDate, setSelectedDate] = useState(null);

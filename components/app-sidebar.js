@@ -24,11 +24,19 @@ const data = {
 			items: [
 				{
 					title: "Inactividad",
-					url: "#",
+					url: "/reportes/inactividad",
 				},
 				{
 					title: "Horas de motor",
-					url: "#",
+					url: "/reportes/horas-motor",
+				},
+				{
+					title: "Viajes y paradas",
+					url: "/reportes/viajes-paradas",
+				},
+				{
+					title: "Reporte de geocercas",
+					url: "/reportes/geocercas",
 				},
 			],
 		},
