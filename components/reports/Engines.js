@@ -331,7 +331,7 @@ export default function Engines() {
 
 		<Drawer open={open} onOpenChange={setOpen}>
 			<DrawerContent>
-				<DrawerTitle className="hidden">Reporte de Inactividad</DrawerTitle>
+				<DrawerTitle className="hidden">Reporte de Horas Motor</DrawerTitle>
 				{!selectedReport ? (
 					<div className="flex h-64 flex-col items-center justify-center gap-2">
 						<Loader2 className="w-12 h-12 animate-spin text-orange-500" />
@@ -351,14 +351,18 @@ export default function Engines() {
 								<TableHeader>
 									<TableRow>
 										<TableHead className="w-[100px]">Vehículo</TableHead>
-										<TableHead className="text-right">Inactividad</TableHead>
+										<TableHead className="text-right">Horas Motors</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
-									{selectedReport?.navixy_response?.report?.sheets?.map((vehicle) => (
+									{selectedReport?.navixy_response?.report?.sheets?.filter((v) => v.header !== 'Período Resumen').map((vehicle) => (
 										<TableRow key={vehicle.header}>
 											<TableCell className="font-medium text-xs">{vehicle.header}</TableCell>
-											<TableCell className="text-right text-xs">{vehicle.sections[0].text === 'Sin tiempo de inactividad en el período especificado.' ? 'Sin Inactividad' : vehicle.sections[1].rows.find(row => row.name === 'Duración inactivo').v}</TableCell>
+											<TableCell className="text-right text-xs">
+												{formatSecondsToHHMMSS(
+													vehicle.sections[3]?.data[0]?.total?.duration.raw || 0
+												)}
+											</TableCell>
 											<TableCell>
 											</TableCell>
 										</TableRow>
@@ -380,7 +384,7 @@ export default function Engines() {
 			<DialogContent className={'sm:max-w-[90%]'}>
 				<DialogHeader>
 					<DialogTitle className="text-xl text-left font-bold text-gray-800">
-						Reporte de Inactividad
+						Reporte de Horas Motor
 					</DialogTitle>
 					<DialogDescription className="text-sm text-muted-foreground text-left gap-2">
 						<span className="font-medium text-gray-700">
@@ -403,12 +407,9 @@ export default function Engines() {
 								<TableHead className="sticky left-0 z-10 bg-gray-100 font-bold text-gray-700 shadow-md">
 									Vehículo
 								</TableHead>
-								<TableHead className="text-right font-semibold text-gray-600">No Oper</TableHead>
-								<TableHead className="text-right font-semibold text-gray-600">Oper &gt; 5</TableHead>
-								<TableHead className="text-right font-semibold text-gray-600">Oper &lt; 5</TableHead>
-								<TableHead className="text-right font-semibold text-gray-600">Hrs On</TableHead>
-								<TableHead className="text-right font-semibold text-gray-600">Hrs Off</TableHead>
-								<TableHead className="text-right font-semibold text-gray-600">Totales</TableHead>
+								<TableHead className="text-right font-semibold text-gray-600">Horas Motor</TableHead>
+								<TableHead className="text-right font-semibold text-gray-600">Horas Movimiento</TableHead>
+								<TableHead className="text-right font-semibold text-gray-600">Horas Ralentí</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -420,66 +421,22 @@ export default function Engines() {
 									<TableCell className="sticky left-0 z-10 bg-white group-hover:bg-muted font-medium text-sm shadow-md transition-colors">
 										{vehicle.header}
 									</TableCell>
-									<TableCell className="text-right text-sm">
+									<TableCell className="text-right sticky left-0 z-10 bg-white group-hover:bg-muted font-medium text-sm shadow-md transition-colors">
 										{formatSecondsToHHMMSS(
-											vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
-												.filter(row => {
-													const addresses = row.address.v
-														.split(']')[0]
-														.slice(1)
-														.split(',')
-														.map(item => item.trim());
-
-													const prefix = vehicle?.header.split('-').slice(0, 2).join('-');
-
-													const hasOP = addresses.some(address => address.startsWith(`${prefix}-OP`));
-													const hasNOPorGEN = addresses.some(address =>
-														address.startsWith(`${prefix}-NOP`) || address.startsWith(`${prefix}-GEN`)
-													);
-
-													return hasNOPorGEN && !hasOP;
-												})
-												.reduce((total, row) => total + (row.ignition_on?.raw || 0), 0)
+											vehicle.sections[3]?.data?.flatMap(item => item.rows || [])
+												.reduce((total, row) => total + (row.duration?.raw || 0), 0)
 										)}
 									</TableCell>
-									<TableCell className="text-right text-sm">
-										{formatSecondsToHHMMSS(vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
-											.filter(row => {
-												const addresses = row.address.v.split(']')[0].slice(1).split(',').map(item => item.trim());
-												return addresses.some(address => address.startsWith(vehicle?.header.split('-').slice(0, 2).join('-') + '-OP'));
-											})
-											.filter(row => row.ignition_on?.raw > 300)
-											.reduce((total, row) => total + (row.ignition_on?.raw || 0), 0))}
-									</TableCell>
-									<TableCell className="text-right text-sm">
-										{formatSecondsToHHMMSS(vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
-											.filter(row => {
-												const addresses = row.address.v.split(']')[0].slice(1).split(',').map(item => item.trim());
-												return addresses.some(address => address.startsWith(vehicle?.header.split('-').slice(0, 2).join('-') + '-OP'));
-											})
-											.filter(row => row.ignition_on?.raw < 300)
-											.reduce((total, row) => total + (row.ignition_on?.raw || 0), 0))}
-									</TableCell>
-									<TableCell className="text-right text-sm">
+									<TableCell className="text-right sticky left-0 z-10 bg-white group-hover:bg-muted font-medium text-sm shadow-md transition-colors">
 										{formatSecondsToHHMMSS(
-											vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
-												.reduce((total, row) => total + (row.ignition_on?.raw || 0), 0)
+											vehicle.sections[3]?.data?.flatMap(item => item.rows || [])
+												.reduce((total, row) => total + (row.in_movement?.raw || 0), 0)
 										)}
 									</TableCell>
-									<TableCell className="text-right text-sm">
+									<TableCell className="text-right sticky left-0 z-10 bg-white group-hover:bg-muted font-medium text-sm shadow-md transition-colors">
 										{formatSecondsToHHMMSS(
-											vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
-												.reduce((total, row) => {
-													const ignition = row.ignition_on?.raw || 0;
-													const idle = row.idle_duration?.raw || 0;
-													return total + Math.max(idle - ignition, 0);
-												}, 0)
-										)}
-									</TableCell>
-									<TableCell className="text-right text-sm">
-										{formatSecondsToHHMMSS(
-											vehicle.sections[0]?.data?.flatMap(item => item.rows || [])
-												.reduce((total, row) => total + (row.idle_duration?.raw || 0), 0)
+											vehicle.sections[3]?.data?.flatMap(item => item.rows || [])
+												.reduce((total, row) => total + (row.idle?.raw || 0), 0)
 										)}
 									</TableCell>
 								</TableRow>

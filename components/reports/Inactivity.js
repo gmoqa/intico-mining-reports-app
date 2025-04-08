@@ -253,10 +253,6 @@ export default function Inactivity() {
 											)}
 											{report.shift?.type}
 										</Badge>
-										<Badge className="text-xs bg-amber-300 text-foreground">
-											<Truck className="w-3 h-3 mr-1" />
-											{report.vehicles?.length}
-										</Badge>
 									</div>
 								</div>
 							</TableCell>
